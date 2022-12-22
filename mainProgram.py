@@ -3,7 +3,7 @@ import openpyxl
 from datetime import datetime, timedelta
 
 class Employee:
-    def __init__(self, name, number, hours, OThours):
+    def __init__(self, name, number, hours = 0, OThours = 0):
         self.name = name
         self.number = number
         self.hours = hours
@@ -11,7 +11,7 @@ class Employee:
 
 def timeCalculator(tempCellValue):
     FMT = '%H:%M'
-    OThours = datetime.strptime("08:00:00", "%H:%M:%S")
+    OT = datetime.strptime("08:00:00", "%H:%M:%S")
 
     tempCellValue = tempCellValue.strip()
     timeSplitted = tempCellValue.splitlines()
@@ -26,17 +26,17 @@ def timeCalculator(tempCellValue):
     time = tempSplitted[-1]
     tdelta = datetime.strptime(time, "%H:%M:%S")
 
-    if tdelta > OThours:
-        calculatingTime = str(tdelta)
-        calculatingTimeSplitted = calculatingTime.split(" ")
-        calculatingTime = calculatingTimeSplitted[-1]
-        print(calculatingTime)
-    if tdelta < OThours:
+    if tdelta > OT:
+        OThours = tdelta - timedelta(hours = 8)
+        print(tdelta)
+        print(OThours)
+
+    if tdelta < OT:
         print("no OT")
     
 
 def readFile():
-    x = "temp"
+    employeeList = []
     try:
         x = pyautogui.prompt('Please enter excel timesheet filename', 'LostSG Salary Calculator')
         if x == "":
@@ -54,18 +54,25 @@ def readFile():
                 print("\n")
                 print("Row ", i, " data :")
                 #for j in range(1, sh.max_column+1):
-                for j in range(18, 19):
+                for j in range(1, 19):
                     if j == 1:
                         cell_obj = sh.cell(row=i, column=j)
                         temp = Employee(cell_obj.value, i)
+                        employeeList.append(temp)
                         print(temp.name)
                         print(temp.number)
                     cell_obj = sh.cell(row=i, column=j)
                     tempCellValue = cell_obj.value
-                    if tempCellValue is None:
-                        pass
-                    else:
-                        timeCalculator(tempCellValue)
+                    if j > 1:
+                        try:
+                            if tempCellValue is None:
+                                pass
+                            else:
+                                timeCalculator(tempCellValue)
+                        except ValueError:
+                            pass
+                        except AttributeError:
+                            pass
 
     except FileNotFoundError:
         pyautogui.alert(text='File not Found', title='Error', button='OK')
