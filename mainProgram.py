@@ -3,13 +3,13 @@ import openpyxl
 from datetime import datetime, timedelta
 
 class Employee:
-    def __init__(self, name, number, hours = 0, OThours = 0):
+    def __init__(self, name, number, hours = timedelta(hours = 0), OThours = timedelta(hours = 0)):
         self.name = name
         self.number = number
         self.hours = hours
         self.OThours = OThours
 
-def timeCalculator(tempCellValue):
+def timeCalculator(tempCellValue, employeeList, employeeNumber):
     FMT = '%H:%M'
     OT = datetime.strptime("08:00:00", "%H:%M:%S")
 
@@ -28,12 +28,16 @@ def timeCalculator(tempCellValue):
 
     if tdelta > OT:
         OThours = tdelta - timedelta(hours = 8)
-        print(tdelta)
-        print(OThours)
-
-    if tdelta < OT:
-        print("no OT")
-    
+        for i in employeeList:
+            if employeeNumber == i.number:
+                i.hours = i.hours + timedelta(hours = 8)
+                i.OThours = i.OThours + OThours
+       
+    for x in employeeList:
+        print(x.name)
+        print(x.number)
+        print(x.hours)
+        print(x.OThours)
 
 def readFile():
     employeeList = []
@@ -53,8 +57,7 @@ def readFile():
             for i in range(5,6):
                 print("\n")
                 print("Row ", i, " data :")
-                #for j in range(1, sh.max_column+1):
-                for j in range(1, 19):
+                for j in range(1, sh.max_column+1):
                     if j == 1:
                         cell_obj = sh.cell(row=i, column=j)
                         temp = Employee(cell_obj.value, i)
@@ -68,7 +71,8 @@ def readFile():
                             if tempCellValue is None:
                                 pass
                             else:
-                                timeCalculator(tempCellValue)
+                                tempCellValue = tempCellValue.replace(" ","")
+                                timeCalculator(tempCellValue, employeeList, temp.number)
                         except ValueError:
                             pass
                         except AttributeError:
